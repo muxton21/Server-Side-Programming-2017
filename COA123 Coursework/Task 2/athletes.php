@@ -6,7 +6,7 @@
         <style type="text/css">
         body{background-color:orange;font-size:1.1em;text-align:center;}
         </style>
-        <title>Task 3</title>
+        <title>Task 2</title>
 		<style type="text/css">
 body{
   background-color:#aaaabb;}
@@ -40,24 +40,17 @@ td:hover{
 
 </style>
     </head>
-<body>
-<table class="table">
+    <body> 
+	
+	<table class="table">
 	<tr>
-		<td class="class1">NAME</td>
-		<td class="class1">COUNTRY</td>
-		<td class="class1">GDP</td>
-		<td class="class1">POPULATION</td>
+		<td class="cell1">NAME</td>
+		<td class="cell1">GENDER</td>
+		<td class="cell1">BMI</td>
 	</tr>
 <?php
-function dateConverter($dateInput){ //converts date to database form
-	$date = substr($dateInput,0,2); //day of the dob
-	$month = substr($dateInput,3,2); //month of dob
-	$year = substr($dateInput,6); //year of dob
-	$result = $year."-".$month."-".$date; //converts dob to YYYY-MM-DD form
-	return $result;
-}
-$date_1 = dateConverter($_GET['date_1']); //gets date 1 from HTML form
-$date_2 = dateConverter($_GET['date_2']); //gets date 2 from HTML form
+$country_id = $_GET['country_id'];
+$part_name = $_GET['part_name'];
 require_once 'MDB2.php';
 
 include "coa123-mysql-connect.php"; //to provide $username,$password 
@@ -78,37 +71,33 @@ $table_country="Country";
 
 $db->setFetchMode(MDB2_FETCHMODE_ASSOC);
 
-
 //T2. search for countries with population > 50000000, save the results in $res
 $sql="SELECT * FROM $table_country WHERE population > 50000000";
 $res =& $db->query($sql);
 //search for part_name
-$sql1="SELECT * FROM `Cyclist` INNER JOIN `Country` ON Cyclist.ISO_id=Country.ISO_id WHERE `dob` >= '$date_1' AND `dob` <= '$date_2'";
+$sql1="SELECT * FROM `Cyclist` WHERE `name` LIKE '%$part_name%' AND `ISO_id` LIKE '%$country_id%'";
 $res1=& $db->query($sql1);
+
 if(PEAR::isError($res)){
     die($res->getMessage());
 }
-//T4. display relevent information (e.g. country_name list) using fetchRow 
-//while ($row = $res1->fetchRow()) {
-	//echo '<tr>';
-	//echo '<td class="cell2">'.$row[strtolower('name')].'</td>';
-	//echo '<td class="cell2">'.$row[strtolower('country_name')].'</td>';
-	//echo '<td class="cell2">'.$row[strtolower('gdp')].'</td>';
-	//echo '<td class="cell2">'.$row[strtolower('population')].'</td>';
-	//echo '</tr>';
-//}
-while($row=$res1->fetchRow()){
-	$rows[] = $row;	
-}
-$jsonResult = json_encode($rows);
-$json_array  = json_decode($jsonResult, true);
-$elementCount  = count($json_array);
-echo $jsonResult;
-//for($i=1;$i<=$json_array.length;$i=$i+1){
-	//echo $i;
-//}
 
+//T4. display relevent information (e.g. country_name list) using fetchRow 
+while ($row = $res1->fetchRow()) { // fetches each row of the sql query
+	echo '<tr>'; //adds new row
+	echo '<td class="cell2">'.$row[strtolower('name')].'</td>'; //adds the name to the first column
+	echo '<td class="cell2">'.$row[strtolower('gender')].'</td>'; // adds the gender of the cyclist to the second column
+	$weight1 = $row[strtolower('weight')];
+	$bmi = round(($row[strtolower('weight')]/(pow(($row[strtolower('height')]/100),2))),3); //calculates bmi score
+	if($weight1 === ""){
+		echo '<td class="cell2">N/A</td>';
+	}
+	else{
+		echo '<td class="cell2">'.$bmi.'</td>'; //adds bmi score to the 3rd column of the table
+	}
+	echo '</tr>';
+}
 ?>
-</table>	
+</table>
 </body>
 </html>
